@@ -1,2 +1,7 @@
 *.class
 *.log
+.Rproj.user
+
+#ignore data folder
+/Data/*
+/Pics/*

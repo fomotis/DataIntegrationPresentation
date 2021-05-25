@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Data Integration Techniques</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Olusoji Oluwafemi Daniel" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+
+
+
+
+
+class: inverse, center
+
+&lt;div style="text-align: left"&gt;
+&lt;img style="float: center; margin: 0px 15px 15px 0px;" src="Pics/DSI-logo.png" width="80" height="80"/&gt;
+&lt;/div&gt;
+
+
+## Data Integration Techniques &lt;br&gt; with Examples in Ecology and Biomarker Discovery/Surrogacy 
+
+#### HTML Slides: https://fomotis.github.io/DataIntegrationPresentation/
+
+&lt;div style="text-align: right"&gt;
+&lt;img style="float: center; margin: 0px 15px 15px 0px;" src="Pics/ilee.jpg" width="120" height="120"/&gt;
+&lt;/div&gt;
+
+---
+
+class: center, middle
+
+# Introduction
+
+
+---
+
+## Data! Data!! Data !!!
+
+&lt;img src="Pics/DataEveryWhere.jpg" width="65%" height="65%" style="display: block; margin: auto;" /&gt;
+
+* We are currently suffering from an avalanche of data.
+
+* The advent of technologies as; 
+  - Microarrays, 
+  - flow-cytometers, 
+  - gyroscopes, GPS
+  - sensors, IOT, and cloud technology.
+
+means we can measure a lot of things.
+
+---
+
+## More Data `\(\Rightarrow\)` New/Revision of Methods
+
+.pull-left[
+&lt;img src="Pics/growthofdata.png" width="85%" height="85%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+&lt;img src="Pics/growthofdatascience.jpg" width="97%" height="97%" style="display: block; margin: auto;" /&gt;
+]
+
+* Recent explosions in Data Science and ML can be associated with explosion in the availability of data.
+
+* Some ML techniques are part of the answers statisticians and other stakeholders provided to the questions posed by high dimensional data.
+
+* **More data also means we can combine (integrate) data from different sources**
+
+---
+
+##  Data Integration
+
+&lt;img src="Pics/dataintegration.png" width="40%" height="40%" style="display: block; margin: auto;" /&gt;
+
+* Data integration is about techniques for combining data from different sources.
+
+---
+
+##  Some Techniques for Data Integration
+
+- Focus is on modelling techniques
+
+  * Joint Modeling
+
+  * Exploiting Mathematical Relationships
+
+  * Bayesian Techniques
+
+
+---
+class: center, middle
+##  Example in Biomarker Discovery/Surrogacy 
+
+### Evaluation of Surrogate Endpoint in Human Microbiome
+
+#### Oluwafemi Olusoji, Nolen Perualila, Wim Van der Elst, Ziv Shkedy
+
+
+---
+
+## Endpoints in Clinical Trials
+
+&lt;img src="Pics/endpoints.PNG" width="40%" height="40%" style="display: block; margin: auto;" /&gt;
+
+* Endpoints are simply put, variable(s) used to quantify success or failure of a treatment
+
+* Major endpoint(s) of interest are called primary or true endpoint(s) and can sometimes be difficult to measure.
+
+---
+
+## Enters Surrogates
+
+* Surrogates are majorly **biomarkers intended to be used in replacement of the true endpoint.**
+
+* Advantages; **measured earlier**, **an early measure of safety and toxicity**
+
+&lt;img src="Pics/SreplacingT.PNG" width="20%" height="20%" style="display: block; margin: auto;" /&gt;
+
+* What makes a good surrogate? **Individual-level surrogacy**, **trial level surrogacy**.
+
+---
+
+## Aim &amp; Dataset
+
+### Question of Interest
+
+**What elements of the gut microbiota are potential surrogates for insulin sensitivity in patients with metabolic disorder?**
+
+### Datasets
+
+`\(\left[ \begin{array}{c} T_1\\ T_2\\ \vdots\\ T_{16} \end{array} \right], S = \left[ \begin{array}{cccc} S_{1,1} &amp; S_{1,2} &amp; \cdots &amp; S_{1,30} \\ S_{2,1} &amp; S_{2,2} &amp; \cdots &amp; S_{2,30} \\ \vdots &amp; \vdots &amp; \vdots &amp; \vdots \\ S_{16,1} &amp; S_{16,2} &amp; \cdots &amp; S_{16,30} \\ \end{array} \right], Z =  \ \ \left[ \begin{array}{c} Z_1\\ Z_2\\ \vdots\\ Z_{16} \end{array} \right]\)`
+
+* `\(T_i\)` = True endpoint (Insulin sensitivity measured via glucose homeostasis)
+* `\(S_{ij}\)` = Surrogates (Gut Microbiota measured via sequencing)
+* `\(Z_{i}\)` = Treatment (Control \&amp; Experimental)
+* 30 potential surrogates and 16 patients `\(\Rightarrow\)` High dimensional data.
+
+---
+
+### Method
+
+&lt;img src="Pics/modelframework.PNG" width="40%" height="40%" style="display: block; margin: auto;" /&gt;
+
+
+`\(\label{bivariateregression} \left( \begin{array}{c} S_{ij} \\ T_{i} \end{array} \right) \sim N\left[ \left( \begin{array}{c} \mu_{S} + \alpha_j Z_i  \\ \mu_{T} + \beta Z_i \end{array} \right), \Sigma_j \right], \ \ \Sigma_j = \left( \begin{array}{cc} \sigma_{SS} &amp; \sigma_{ST}\\ \sigma_{ST} &amp; \sigma_{TT} \end{array}\right)\)`
+
+From the `\(\Sigma\)` matrix;
+
+`\(\rho_{S,T|Z} = \frac{\sigma_{ST}}{\sqrt{\sigma_{SS} \sigma_{TT} }}\)`
+
+`\(\rho_{S,T|Z}\)` is called the adjusted association.
+
+* It does not have a direct extension to where either `\(S\)` or `\(T\)` or both are not continuous.
+* Only suitable for linear association between `\(S\)` and `\(T\)`
+
+---
+
+### Method cont:
+
+
+* A combination of surrogates might be better
+
+* Multiple Adjusted Association `\(\gamma_{\mathbf{S},T|Z} = \frac{\mathbf{\Sigma'_{ST}}\mathbf{\Sigma^{-1}_{SS}} \mathbf{\Sigma_{ST}}}{\sigma_{TT}}\)`
+
+* An adjusted version can be computed by using `\(1 - (1-\gamma_{\mathbf{S},T|Z} )\frac{N - 1}{N - p - 1}\)`
+
+
+---
+
+### EDA
+
+.pull-left[
+&lt;img src="Pics/exploration-2.png" width="80%" height="80%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+&lt;img src="Pics/exploration-6.png" width="80%" height="80%" style="display: block; margin: auto;" /&gt;
+]
+
+* Surrogate 18 is showing potentials.
+
+---
+
+### Results
+
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="Pics/volcanoplot4alphas.png" alt="Surrogates with adjusted p-value `\(&amp;lt;\)` 0.05 is in red with the surrogate number on it." width="90%" height="90%" /&gt;
+&lt;p class="caption"&gt;Surrogates with adjusted p-value `\(&lt;\)` 0.05 is in red with the surrogate number on it.&lt;/p&gt;
+&lt;/div&gt;
+
+
+---
+
+### Results Cont:
+
+.pull-left[
+&lt;img src="Pics/Residuals_Surrogate1.png" width="90%" height="90%" style="display: block; margin: auto;" /&gt;
+]
+
+.pull-right[
+&lt;img src="Pics/residualsforsurrogate18andTrueEndpoints.png" width="90%" height="90%" style="display: block; margin: auto;" /&gt;
+]
+
+
+* Surrogate 18 is a better candidate surrogate.
+
+---
+
+### Results Cont:
+
+&lt;img src="Pics/residualsforsurrogate18and1.png" width="70%" height="70%" style="display: block; margin: auto;" /&gt;
+
+
+* We can also improve by combining other surrogates with surrogate 18.
+
+---
+
+### Conclusion
+
+* Surrogate 18 (Akkermansia) and 1 (Brachyspira) are the most important surrogates for `\(T\)`
+
+* Akkermansia appears in high counts in healthy individuals} and reverse is the situation in obese individuals.
+
+
+Questions 😀
+
+
+---
+
+class: center, middle
+
+# Example in Ecology: 
+
+### Incorporating Trait Information in Population Growth Models: a Lotka-Volterra example (ON-GOING RESEARCH)
+
+#### Oluwafemi Daniel Olusoji, Thomas Neyens, Marc Aerts, Frederik De Laender
+
+---
+
+## Traits and its Importance
+
+* Traits are simply put characteristics (genetic and/or phenotypic) of a species.
+
+* Traits can influence the survival of a species.
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="Pics/moths.jpg" alt="Peppered moths survival during the industrial evolution in Britain." width="40%" height="40%" /&gt;
+&lt;p class="caption"&gt;Peppered moths survival during the industrial evolution in Britain.&lt;/p&gt;
+&lt;/div&gt;
+
+* Could fetch you an article in [BBC](https://www.bbc.com/news/science-environment-36424768) and [New York Times](https://www.nytimes.com/2016/06/02/science/moths-butterflies-dna-cortex-genes.html).
+
+---
+
+## Traits (Cont.)
+
+* Traits are measured per individual for each species. Thus,
+
+`$$M = \left(\begin{array}{ccc} b_{11} &amp; \cdots &amp; b_{1m}\\ \vdots &amp; \vdots &amp; \vdots \\ b_{n1} &amp; \cdots &amp; b_{nm}  \end{array}\right)$$`
+
+* Longitudinal measurements are also possible. This is especially done if evolution is of interest.
+
+`$$M_1 = \left(\begin{array}{ccc} b_{11} &amp; \cdots &amp; b_{1m}\\ \vdots &amp; \vdots &amp; \vdots \\ b_{n1} &amp; \cdots &amp; b_{nm}  \end{array}\right), \ldots, M_t = \left(\begin{array}{ccc} b_{11} &amp; \cdots &amp; b_{1m}\\ \vdots &amp; \vdots &amp; \vdots \\ b_{n1} &amp; \cdots &amp; b_{nm}  \end{array}\right)$$`
+
+---
+
+## Characterising Population Growth (Lotka-Volterra Model)
+
+`\begin{equation}
+\frac{dN}{dt} = diag(N) (R - AN)
+\end{equation}`
+
+* **Two Species Case**
+
+`\begin{equation}
+\left(\begin{array}{c}\frac{d N_1}{d t} \\  \frac{d N_2}{d t} \end{array} \right) = \left(\begin{array}{c} N_1 \\ N_2
+\end{array} \right) \left[ \left( \begin{array}{c} r_1 \\ r_2 \end{array} \right) - \left( \begin{array}{cc} \alpha_{11} &amp; \alpha_{12} \\ \alpha_{21} &amp; \alpha_{22} \end{array} \right)\left( \begin{array}{c} N_{1} \\ N_{2} \end{array} \right) \right] 
+\end{equation}`
+
+.pull-left[
+* R is a vector of `\(r\)`'s growth rates.
+* `\(A\)` is a matrix of `\(\alpha's\)`
+  - `\(\alpha_{ij}, i = j\)` are intraspecific interaction/competition.
+  - `\(\alpha_{ij}, i \neq j\)` are interspecific interaction/competition.
+]
+
+.pull-right[
+&lt;img src="index_files/figure-html/unnamed-chunk-16-1.png" width="60%" height="60%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Ecological Questions of Interest
+
+* Broader Question: what role do traits play in biodiveristy dynamics?
+
+* Specific Question: what is the role of traits in **growth**, **competition** and co-existence of species?
+
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="Pics/EcologicalPerspective.PNG" alt="Effects of Interest." width="60%" height="60%" /&gt;
+&lt;p class="caption"&gt;Effects of Interest.&lt;/p&gt;
+&lt;/div&gt;
+
+---
+
+## The Modeling Challenge
+
+* Connecting a vector/matrix of trait values to density points such that the ecological questions are answered.
+
+&lt;img src="Pics/StatisticalPerspective.PNG" width="80%" height="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## An Added Layer
+
+* What about environmental factors?
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="Pics/Environment.PNG" alt="Possible Effects" width="80%" height="80%" /&gt;
+&lt;p class="caption"&gt;Possible Effects&lt;/p&gt;
+&lt;/div&gt;
+
+---
+
+## A Quick Literature Dive
+
+
+* The focus is on character displacement approach to trait based ecology.
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="Pics/Literature.PNG" alt="Publication timeline for character displacement approach to trait based ecology" width="80%" height="80%" /&gt;
+&lt;p class="caption"&gt;Publication timeline for character displacement approach to trait based ecology&lt;/p&gt;
+&lt;/div&gt;
+
+
+---
+
+## Quantitative Genetic Lotka-Volterra (Barabas et al. 2015)
+
+* Let `\(T(t)\)` be a trait vector measured at `\(t\)`, `\(T(t) \sim N(\mu'(t), \sigma'^2)\)`
+
+`\begin{eqnarray}
+\frac{dN_i(t)}{dt} &amp;=&amp; N_i(t) \int r_i(N, p, z, t) p_i(z, t)dz \\
+r_i(N, p, z, t) &amp;=&amp; b(z) - \sum_{j = 1}^{S}N_j(t) \int a(z, z') p_j(z', t) dz'\\
+\frac{dN_i(t)}{dt} &amp;=&amp; N_i(t) \left(b_i(t) - \sum_{j = 1}^{S} \alpha_{ij}(t) N_j(t) \right)\\
+b_i(t) &amp;=&amp;  \int p_i(z, t)b(z) dz\\
+\alpha_{ij}(t) &amp;=&amp; \int\int p_i(z, t) a(z, z') p_j(z', t) dz' dz
+\end{eqnarray}`
+
+* `\(a(z, z')\)` and `\(b(z)\)` are appropriately chosen functions to describe interaction and intrinsic growth rate.
+
+---
+
+## Interaction Kernel `\(a(z, z')\)` and Interaction Coefficients `\(\alpha_{ij}\)`
+
+* If `\(a(z, z') = exp\left( - \frac{(z - z')^2}{\omega^2}\right)\)` then,
+
+`\begin{eqnarray}
+\alpha_{ij}(t) &amp;=&amp; \int\int p_i(z, t) a(z, z') p_j(z', t) dz' dz \\
+&amp;=&amp; \frac{w}{\sqrt{2\sigma'^2_i + 2\sigma'^2_j + w^2}} exp\left(-\frac{(\mu'_{i}(t) - \mu'_{j}(t))^2}{2\sigma'^2_i + 2\sigma'^2_j + w^2} \right)
+\end{eqnarray}`
+
+* Note that, `\(\alpha_{ij} = \frac{w}{\sqrt{4\sigma'^2_i + w^2}}\)`, when `\(i = j\)`
+
+---
+
+## Growth rate `\(b(z)\)`
+
+* If `\(b(z) = c, -\infty &lt; z &lt; \infty\)` then,
+
+`$$b_i(t) = \int p_i(z, t)b_i(z) dz = r_i$$` 
+
+`\begin{eqnarray}
+\nonumber b_i(z) &amp;=&amp; c_i, \;\;\text{thus,}\\ 
+ r_i(t) &amp;=&amp; c_i \\\\
+\nonumber b_i(z) &amp;=&amp; \beta_{0} + \beta_{1} (\mu'_i(t) - \mu'_i) \;\;\text{thus,}\\
+\nonumber r_i(t) &amp;=&amp; \beta_{0} + \beta_{1} (\mu'_i(t) - \mu'_i)\\\\
+\nonumber b_i(z) &amp;=&amp; \beta_{0} + \beta_{1} \left(\frac{\mu'_i(t) - \mu'_i}{\sigma^2_i}\right) \;\;\text{thus,}\\
+ r_i(t) &amp;=&amp; \beta_{0} + \beta_{1} \left(\frac{\mu'_i(t) - \mu'_i}{\sigma'^2_i}\right)
+\end{eqnarray}`
+
+
+---
+
+## Statstical Quantitative Genetic Lotka-Volterra (Two Species)
+
+`\begin{eqnarray}
+\nonumber N_{ij} (t) &amp;\sim&amp; \mbox{log-normal}(\mu_{i}(t),\sigma_{i}^2).\\
+\left(\begin{array}{c}\frac{d \mu_1(t)}{d t} \\  \frac{d \mu_2(t)}{d t} \end{array} \right) &amp;=&amp; \left[ \left( \begin{array}{c} r_1(t) \\ r_2(t) \end{array} \right) - \left( \begin{array}{cc} \alpha_{11}(t) &amp; \alpha_{12}(t) \\ \alpha_{21}(t) &amp; \alpha_{22}(t) \end{array} \right)\left( \begin{array}{c} \mu_{1}(t) \\ \mu_{2}(t) \end{array} \right) \right] 
+\end{eqnarray}`
+
+* `\(\alpha_{11} = \frac{w}{\sqrt{4\sigma'^2_1 + w^2}}\)`
+
+* `\(\alpha_{12} = \alpha_{21} = \frac{w}{\sqrt{2\sigma'^2_1 + 2\sigma'^2_2 + w^2}} exp\left(-\frac{(\mu'_{1}(t) - \mu'_{2}(t))^2}{2\sigma'^2_1 + 2\sigma'^2_2 + w^2} \right)\)`
+
+* `\(\alpha_{22} = \frac{w}{\sqrt{4\sigma'^2_2 + w^2}}\)`
+
+
+---
+
+## Estimating `\(\mu_i\)` and `\(\sigma^2_i\)` for Experiments with Replicates
+
+* Let `\(z_{ijk}(t)\)` be the measured trait value for `\(Z\)` at time point `\(t = 1, 2, \ldots, T\)`, per trait `\(i = 1, 2, \ldots, I\)`, replicate `\(j = 1, 2, \ldots, J\)` and `\(k = 1, 2, 3, ..., n_{ij}(t)\)`. 
+
+`\begin{equation}
+    \bar{Z}_{ij.}(t) = \frac{\sum_k z_{ij}(t)}{n_{ij}(t)}
+\end{equation}`
+
+* Per time point `\(t\)`, we can also pool the `\(\bar{Z}_{ij.}(t)\)` across the replicates;
+
+`\begin{equation}
+    \bar{\bar{Z}}_{i.}(t) = \frac{\sum_j\bar{Z}_{ti.}}{J}
+\end{equation}`
+
+* For variances
+
+`\(s^2_{ij.}(t) = \frac{\sum_k(z_{ijk}(t) - \bar{z}_{ij.}(t))^2}{n_{ij}(t) - 1}\)`, 
+`\(s^2_{i.} = \frac{\sum_t\sum_j(n_{ij.}(t) - 1)s^2_{ij.}(t)}{\sum_t\sum_j(n_{ij}(t) - 1)}\)`
+
+
+---
+
+## Adding a Bayesian Flavor
+
+* If monoculture and biculture experiments were carried out then;
+
+`\(\alpha_{B_{ij}} \sim N(\hat{\alpha}_{M_{ij}}, \hat{s}_{\alpha_{M_{ij}}}), i=j\)`
+
+`\(r_{B_{i}} \sim N(\hat{r}_{M_{i}}, \hat{s}_{r_{M_{i}}})\)`
+
+where `\(\hat{\alpha}_{M_{ij}}\)` and `\(\hat{r}_{M_{i}}\)` are estimates from the monoculture dataset.
+
+i.e. use estimates from the monoculture to formulate informative priors for `\(\alpha_{ij}, i=j\)` in the biculture experiments.
+
+
+---
+
+## Experiments
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="pics/monoculture_experiment.PNG" alt="Monoculture Experiment" width="40%" height="40%" /&gt;
+&lt;p class="caption"&gt;Monoculture Experiment&lt;/p&gt;
+&lt;/div&gt;
+
+
+
+&lt;div class="figure" style="text-align: center"&gt;
+&lt;img src="Pics/biculture_experiment.PNG" alt="Biculture Experiment" width="40%" height="40%" /&gt;
+&lt;p class="caption"&gt;Biculture Experiment&lt;/p&gt;
+&lt;/div&gt;
+
+* Traits Investigated: **RED.B.HLin (Chlorophyll a)**, **YEL.B.HLin (Phycoerytherin)**, **FSC.HLin (Size)**
+
+---
+
+## Data
+
+&lt;img src="Pics/RawDataMeans.png" width="80%" height="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Data cont:
+
+
+&lt;img src="Pics/PooledMeansAndVariance.png" width="80%" height="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Fitting The Model
+
+`\begin{equation}
+\left(\begin{array}{c}log(N_1) \\  log(N_2) \end{array} \right) \sim MVN\left( \int\left(\begin{array}{c}\frac{d N_1}{d t} \\  \frac{d N_2}{d t} \end{array} \right), \Sigma \right)
+\end{equation}`
+
+* `\(\Sigma = \left( \begin{array}{cc} \sigma^2_1 &amp; \rho\sigma_1\sigma_2 \\ \rho\sigma_1\sigma_2 &amp; \sigma^2_2 \end{array} \right)\)`
+
+* For monoculture; `\(\hat{\alpha}_{12} = 0\)`, `\(\Sigma = \left( \begin{array}{cc} \sigma^2_1 &amp; 0 \\ 0 &amp; \sigma^2_2 \end{array} \right)\)`
+
+---
+
+## Fitting The Model (cont.)
+
+
+&lt;img src="Pics/ModelTables.PNG" width="65%" height="60%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Model Comparison (Monoculture)
+
+&lt;img src="Pics/Monoculture_ModelComp.PNG" width="80%" height="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Model Comparison (Biculture)
+
+&lt;img src="Pics/Biculture_ModelComp.PNG" width="80%" height="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Results cont:
+
+&lt;img src="Pics/PriorPosteriorAnalysisAlpha11_redb.png" width="108%" height="108%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Results cont:
+
+&lt;img src="Pics/PriorPosteriorAnalysisAlpha22_redb.png" width="108%" height="108%" style="display: block; margin: auto;" /&gt;
+
+
+---
+
+## Results cont:
+
+
+&lt;img src="Pics/All_traits_alpha12_symmlog.png" width="108%" height="108%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Predictions
+
+&lt;img src="Pics/All_traits_B5preds.png" width="108%" height="108%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Some Conclusions
+
+* The effect of informative priors is more feasible at temperature 18 compared to `\(20\)` and `\(22^0C\)`. Regardless of the prior used at `\(20\)` and `\(22^0C\)`, we arrive at the same posterior distribution for `\(\alpha_{ij}, i=j\)`
+
+* Informative priors has a considerable effect on the choice of best model especially at temperature `\(18^0C\)`. Table 4 and 5 makes this clearer. 
+
+* Generally, looics increases when we use informative priors at temperature `\(18^0C\)`, but not for the other two temperature levels.
+
+
+---
+
+class: center, middle
+
+##  Questions &amp; Suggestions 😀
+
+
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

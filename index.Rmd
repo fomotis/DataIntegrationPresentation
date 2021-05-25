@@ -1,0 +1,752 @@
+---
+title: "Data Integration Techniques"
+subtitle: "with Examples in Ecology and Biomarker Discovery"  
+author: 
+  - "Olusoji Oluwafemi Daniel"
+institute: "Center for Statistics, Data Science Institute, Hasselt University, Hasselt, 3500, Belgium.<br>Research Unit in Environmental and Evolutionary Biology (URBE), Institute of Life-Earth-Environment (ILEE), Namur Institute for Complex Systems (NAXYS), Universit'e de Namur, Namur, 5020, Belgium."
+date: "25/05/2021 (updated: `r Sys.Date()`)"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: xaringan-themer.css
+    seal: false
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#272822",
+  white_color = "#FFFFFF",
+  black_color = "#272822",
+  header_font_google = google_font("Josefin Sans"),
+  #text_font_google   = google_font("Open Sans", "300", "300i"),
+  code_font_google   = google_font("Fira Mono"),
+  text_font_base = "Open Sans",
+  link_color = '#88398a',
+  inverse_background_color = "#FFFFFF",
+  inverse_text_color = "#272822",
+  inverse_header_color = "#272822",
+  title_slide_text_color = "#272822",
+  title_slide_background_color = "#FFFFFF",
+)
+```
+
+
+```{r echo=FALSE,include=FALSE, warning=FALSE}
+library(knitr)
+library(ggpubr)
+library(tidyverse)
+library(grid)
+library(png)
+library(gridExtra)
+library(knitr)
+library(deSolve)
+library(kableExtra)
+options(knitr.table.format = "html",
+        htmltools.dir.version = FALSE
+        )
+knitr::opts_chunk$set(echo = TRUE, 
+                      message = FALSE,	
+                      warning = FALSE,
+                      eval = TRUE,
+                      tidy = FALSE
+                    )
+
+comb2pngs2 <- function(imgs, bottom_text = NULL){
+  img1 <-  grid::rasterGrob(as.raster(readPNG(imgs[1])),
+                            interpolate = FALSE)
+  img2 <-  grid::rasterGrob(as.raster(readPNG(imgs[2])),
+                            interpolate = FALSE)
+  grid.arrange(img1, img2, ncol = 2, bottom = bottom_text)
+}
+
+im1 <- "Pics/moths.jpg"
+im1b <- "Pics/DataEveryWhere.jpg"
+im1c <- "Pics/growthofdata.png"
+im1d <- "Pics/growthofdatascience.jpg"
+im1e <- "Pics/dataintegration.png"
+im1f <- "Pics/endpoints.PNG"
+im1g <- "Pics/SreplacingT.PNG"
+im1h <- "Pics/modelframework.PNG"
+im1i <- "Pics/exploration-2.png"
+im1j <- "Pics/exploration-6.png"
+im1k <- "Pics/volcanoplot4alphas.png"
+im1l <- "Pics/Residuals_Surrogate1.png"
+im1m <- "Pics/residualsforsurrogate18andTrueEndpoints.png"
+im1n <- "Pics/residualsforsurrogate18and1.png"
+im1o <- "Pics/RawDataMeans.png"
+im1p <- "Pics/PooledMeansAndVariance.png"
+im1q <- "Pics/Monoculture_ModelComp.PNG"
+im1r <- "Pics/Biculture_ModelComp.PNG"
+im1s <- "Pics/PriorPosteriorAnalysisAlpha11_redb.png"
+im1t <- "Pics/PriorPosteriorAnalysisAlpha22_redb.png"
+im1u <- "Pics/All_traits_alpha12_symmlog.png"
+im1v <- "Pics/All_traits_B5preds.png"
+im2 <- "Pics/example1.png"
+im3 <- "Pics/EcologicalPerspective.PNG"
+im4 <- "Pics/StatisticalPerspective.PNG"
+im5 <- "Pics/Environment.PNG"
+im6 <- "Pics/Literature.PNG"
+im7 <- "pics/monoculture_experiment.PNG"
+im8 <- "Pics/biculture_experiment.PNG"
+im9 <- "Pics/All_traits_N02.png"
+im10 <- "Pics/All_traits_r2.png"
+im11 <- "Pics/All_traits_alpha1122.png"
+im12 <- "Pics/All_traits_alpha12_all.png"
+im12b <- "Pics/All_traits_alpha12_18.png"
+im12c <- "Pics/All_traits_alpha12_20.png"
+im12d <- "Pics/All_traits_alpha12_22.png"
+im13 <- "Pics/Both_LVE_r2.png"
+im14 <- "Pics/All_traits_alpha1221_Mean.png"
+im15 <- "Pics/All_traits_w.png"
+im16 <- "Pics/All_b4_preds.png"
+im17 <- "Pics/All_b5_preds.png"
+im18 <- "Pics/b4_pred_barabas.png"
+im19 <- "Pics/b5_pred_barabas.png"
+im20 <- "Pics/ModelTables.PNG"
+im21a <- "Pics/ModelComparisonMono.PNG"
+im21b <- "Pics/ModelComparisonBI.PNG"
+im22 <- "Pics/PriorPosteriorAnalysisAlpha11_redb.png"
+im23 <- "Pics/PriorPosteriorAnalysisAlpha22_redb.png"
+im24 <- "Pics/PriorPosteriorAnalysis_w_2.png"
+
+combined_data <- read.csv("Data/combined_data.csv", header = T, na.strings = ".", 
+                          stringsAsFactors = FALSE )
+biculture_data <- combined_data %>% 
+  dplyr::filter(Experiment == "BI" & Time > 1) %>% 
+  mutate(Temperature = factor(Temperature), 
+         Temperature2 = case_when( 
+           
+           Temperature == 18 ~ 1,
+           Temperature == 20 ~ 2,
+           Temperature == 22 ~ 3
+           
+         )
+         
+  ) 
+
+biculture_data <- biculture_data[order(biculture_data$Sample.ID2, biculture_data$Time), ]
+```
+
+
+
+class: inverse, center
+
+<div style="text-align: left">
+<img style="float: center; margin: 0px 15px 15px 0px;" src="Pics/DSI-logo.png" width="80" height="80"/>
+</div>
+
+
+## Data Integration Techniques <br> with Examples in Ecology and Biomarker Discovery/Surrogacy 
+
+#### HTML Slides: https://fomotis.github.io/DataIntegrationPresentation/
+
+<div style="text-align: right">
+<img style="float: center; margin: 0px 15px 15px 0px;" src="Pics/ilee.jpg" width="120" height="120"/>
+</div>
+
+---
+
+class: center, middle
+
+# Introduction
+
+
+---
+
+## Data! Data!! Data !!!
+
+```{r, echo=FALSE, out.width = "65%", out.height = "65%", fig.align='center', fig.cap=''}
+include_graphics(im1b)
+```
+
+* We are currently suffering from an avalanche of data.
+
+* The advent of technologies as; 
+  - Microarrays, 
+  - flow-cytometers, 
+  - gyroscopes, GPS
+  - sensors, IOT, and cloud technology.
+
+means we can measure a lot of things.
+
+---
+
+## More Data $\Rightarrow$ New/Revision of Methods
+
+.pull-left[
+```{r, echo=FALSE, out.width = "85%", out.height = "85%", fig.align='center', fig.cap=''}
+include_graphics(im1c)
+```
+]
+
+.pull-right[
+```{r, echo=FALSE, out.width = "97%", out.height = "97%", fig.align='center', fig.cap=''}
+include_graphics(im1d)
+```
+]
+
+* Recent explosions in Data Science and ML can be associated with explosion in the availability of data.
+
+* Some ML techniques are part of the answers statisticians and other stakeholders provided to the questions posed by high dimensional data.
+
+* **More data also means we can combine (integrate) data from different sources**
+
+---
+
+##  Data Integration
+
+```{r, echo=FALSE, out.width = "40%", out.height = "40%", fig.align='center', fig.cap=''}
+include_graphics(im1e)
+```
+
+* Data integration is about techniques for combining data from different sources.
+
+---
+
+##  Some Techniques for Data Integration
+
+- Focus is on modelling techniques
+
+  * Joint Modeling
+
+  * Exploiting Mathematical Relationships
+
+  * Bayesian Techniques
+
+
+---
+class: center, middle
+##  Example in Biomarker Discovery/Surrogacy 
+
+### Evaluation of Surrogate Endpoint in Human Microbiome
+
+#### Oluwafemi Olusoji, Nolen Perualila, Wim Van der Elst, Ziv Shkedy
+
+
+---
+
+## Endpoints in Clinical Trials
+
+```{r, echo=FALSE, out.width = "40%", out.height = "40%", fig.align='center', fig.cap=''}
+include_graphics(im1f)
+```
+
+* Endpoints are simply put, variable(s) used to quantify success or failure of a treatment
+
+* Major endpoint(s) of interest are called primary or true endpoint(s) and can sometimes be difficult to measure.
+
+---
+
+## Enters Surrogates
+
+* Surrogates are majorly **biomarkers intended to be used in replacement of the true endpoint.**
+
+* Advantages; **measured earlier**, **an early measure of safety and toxicity**
+
+```{r, echo=FALSE, out.width = "20%", out.height = "20%", fig.align='center', fig.cap=''}
+include_graphics(im1g)
+```
+
+* What makes a good surrogate? **Individual-level surrogacy**, **trial level surrogacy**.
+
+---
+
+## Aim & Dataset
+
+### Question of Interest
+
+**What elements of the gut microbiota are potential surrogates for insulin sensitivity in patients with metabolic disorder?**
+
+### Datasets
+
+$\left[ \begin{array}{c} T_1\\ T_2\\ \vdots\\ T_{16} \end{array} \right], S = \left[ \begin{array}{cccc} S_{1,1} & S_{1,2} & \cdots & S_{1,30} \\ S_{2,1} & S_{2,2} & \cdots & S_{2,30} \\ \vdots & \vdots & \vdots & \vdots \\ S_{16,1} & S_{16,2} & \cdots & S_{16,30} \\ \end{array} \right], Z =  \ \ \left[ \begin{array}{c} Z_1\\ Z_2\\ \vdots\\ Z_{16} \end{array} \right]$
+
+* $T_i$ = True endpoint (Insulin sensitivity measured via glucose homeostasis)
+* $S_{ij}$ = Surrogates (Gut Microbiota measured via sequencing)
+* $Z_{i}$ = Treatment (Control \& Experimental)
+* 30 potential surrogates and 16 patients $\Rightarrow$ High dimensional data.
+
+---
+
+### Method
+
+```{r, echo=FALSE, out.width = "40%", out.height = "40%", fig.align='center', fig.cap=''}
+include_graphics(im1h)
+```
+
+
+$\label{bivariateregression} \left( \begin{array}{c} S_{ij} \\ T_{i} \end{array} \right) \sim N\left[ \left( \begin{array}{c} \mu_{S} + \alpha_j Z_i  \\ \mu_{T} + \beta Z_i \end{array} \right), \Sigma_j \right], \ \ \Sigma_j = \left( \begin{array}{cc} \sigma_{SS} & \sigma_{ST}\\ \sigma_{ST} & \sigma_{TT} \end{array}\right)$
+
+From the $\Sigma$ matrix;
+
+$\rho_{S,T|Z} = \frac{\sigma_{ST}}{\sqrt{\sigma_{SS} \sigma_{TT} }}$
+
+$\rho_{S,T|Z}$ is called the adjusted association.
+
+* It does not have a direct extension to where either $S$ or $T$ or both are not continuous.
+* Only suitable for linear association between $S$ and $T$
+
+---
+
+### Method cont:
+
+
+* A combination of surrogates might be better
+
+* Multiple Adjusted Association $\gamma_{\mathbf{S},T|Z} = \frac{\mathbf{\Sigma'_{ST}}\mathbf{\Sigma^{-1}_{SS}} \mathbf{\Sigma_{ST}}}{\sigma_{TT}}$
+
+* An adjusted version can be computed by using $1 - (1-\gamma_{\mathbf{S},T|Z} )\frac{N - 1}{N - p - 1}$
+
+
+---
+
+### EDA
+
+.pull-left[
+```{r, echo=FALSE, out.width = "80%", out.height = "80%", fig.align='center', fig.cap=''} 
+include_graphics(im1i)
+```
+]
+
+.pull-right[
+```{r, echo=FALSE, out.width = "80%", out.height = "80%", fig.align='center', fig.cap=''} 
+include_graphics(im1j)
+```
+]
+
+* Surrogate 18 is showing potentials.
+
+---
+
+### Results
+
+
+```{r, echo=FALSE, out.width = "90%", out.height = "90%", fig.align='center', fig.cap='Surrogates with adjusted p-value $<$ 0.05 is in red with the surrogate number on it.'} 
+include_graphics(im1k)
+```
+
+
+---
+
+### Results Cont:
+
+.pull-left[
+```{r, echo=FALSE, out.width = "90%", out.height = "90%", fig.align='center', fig.cap=''} 
+include_graphics(im1l)
+```
+]
+
+.pull-right[
+```{r, echo=FALSE, out.width = "90%", out.height = "90%", fig.align='center', fig.cap=''} 
+include_graphics(im1m)
+```
+]
+
+
+* Surrogate 18 is a better candidate surrogate.
+
+---
+
+### Results Cont:
+
+```{r, echo=FALSE, out.width = "70%", out.height = "70%", fig.align='center', fig.cap=''} 
+include_graphics(im1n)
+```
+
+
+* We can also improve by combining other surrogates with surrogate 18.
+
+---
+
+### Conclusion
+
+* Surrogate 18 (Akkermansia) and 1 (Brachyspira) are the most important surrogates for $T$
+
+* Akkermansia appears in high counts in healthy individuals} and reverse is the situation in obese individuals.
+
+
+Questions `r emo::ji("grinning")`
+
+
+---
+
+class: center, middle
+
+# Example in Ecology: 
+
+### Incorporating Trait Information in Population Growth Models: a Lotka-Volterra example (ON-GOING RESEARCH)
+
+#### Oluwafemi Daniel Olusoji, Thomas Neyens, Marc Aerts, Frederik De Laender
+
+---
+
+## Traits and its Importance
+
+* Traits are simply put characteristics (genetic and/or phenotypic) of a species.
+
+* Traits can influence the survival of a species.
+
+```{r, echo=FALSE, out.width = "40%", out.height = "40%", fig.align='center', fig.cap='Peppered moths survival during the industrial evolution in Britain.'}
+include_graphics(im1)
+```
+
+* Could fetch you an article in [BBC](https://www.bbc.com/news/science-environment-36424768) and [New York Times](https://www.nytimes.com/2016/06/02/science/moths-butterflies-dna-cortex-genes.html).
+
+---
+
+## Traits (Cont.)
+
+* Traits are measured per individual for each species. Thus,
+
+$$M = \left(\begin{array}{ccc} b_{11} & \cdots & b_{1m}\\ \vdots & \vdots & \vdots \\ b_{n1} & \cdots & b_{nm}  \end{array}\right)$$
+
+* Longitudinal measurements are also possible. This is especially done if evolution is of interest.
+
+$$M_1 = \left(\begin{array}{ccc} b_{11} & \cdots & b_{1m}\\ \vdots & \vdots & \vdots \\ b_{n1} & \cdots & b_{nm}  \end{array}\right), \ldots, M_t = \left(\begin{array}{ccc} b_{11} & \cdots & b_{1m}\\ \vdots & \vdots & \vdots \\ b_{n1} & \cdots & b_{nm}  \end{array}\right)$$
+
+---
+
+## Characterising Population Growth (Lotka-Volterra Model)
+
+\begin{equation}
+\frac{dN}{dt} = diag(N) (R - AN)
+\end{equation}
+
+* **Two Species Case**
+
+\begin{equation}
+\left(\begin{array}{c}\frac{d N_1}{d t} \\  \frac{d N_2}{d t} \end{array} \right) = \left(\begin{array}{c} N_1 \\ N_2
+\end{array} \right) \left[ \left( \begin{array}{c} r_1 \\ r_2 \end{array} \right) - \left( \begin{array}{cc} \alpha_{11} & \alpha_{12} \\ \alpha_{21} & \alpha_{22} \end{array} \right)\left( \begin{array}{c} N_{1} \\ N_{2} \end{array} \right) \right] 
+\end{equation}
+
+.pull-left[
+* R is a vector of $r$'s growth rates.
+* $A$ is a matrix of $\alpha's$
+  - $\alpha_{ij}, i = j$ are intraspecific interaction/competition.
+  - $\alpha_{ij}, i \neq j$ are interspecific interaction/competition.
+]
+
+.pull-right[
+```{r, echo=FALSE, out.width = "60%", out.height = "60%", fig.align='center', fig.cap=''}
+biLVE <- function(t,  N, parms) {
+  
+  with(as.list(c(parms, N)), {
+    
+    dNdt1 =  N[1] * (r1 - (alpha11*N[1] + alpha12*N[2]) )
+    dNdt2 =  N[2] * (r2 - (alpha21*N[1] + alpha22*N[2]) )
+    res <- c(dNdt1, dNdt2)
+    list(res)
+    
+  })
+  
+}
+N0 <- c(5.15, 8.2)
+r1 <- 0.35; r2 <- 0.40
+alpha11 <- 0.05; alpha22 <- 0.03
+alpha12 <- 0.0015; alpha21 <- 0.002
+ts <- seq(1, 50, length.out = 30)
+out <- ode(y = N0, func = biLVE, times = ts, 
+           parms = c(r1 = r1, r2 = r2, 
+                         alpha11 = alpha11, 
+                         alpha12 = alpha12, 
+                         alpha21 = alpha21, 
+                         alpha22 = alpha22))
+colnames(out) <- c('Time', 'S1', 'S2')
+
+p1 <- out %>% as.data.frame() %>% 
+  pivot_longer(cols = c('S1', 'S2'), 
+               names_to = 'Species', 
+               values_to = 'Density') %>%
+  ggplot(aes(x = Time, y = Density, 
+             color = Species, 
+             group = Species)) + 
+  geom_point(size = 4) +
+  geom_line() +
+  theme_bw() + 
+  color_palette("Dark2") +
+  scale_x_continuous(breaks = seq(0, 50, by = 4)) +
+  scale_y_continuous(breaks = seq(0, 14, by = 1)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0.9, vjust = 0.5), 
+        legend.position = "top") +
+  labs(x = "Time", y = "Density") +
+  ggtitle('Two Species Lotka-Volterra') +
+  theme_xaringan(background_color = "#FFFFFF") +
+  scale_xaringan_fill_discrete()
+p1
+#ggsave(plot = p1, filename = 'Pics/example1.png', 
+#       width = 5, height = 5)
+```
+]
+
+---
+
+## Ecological Questions of Interest
+
+* Broader Question: what role do traits play in biodiveristy dynamics?
+
+* Specific Question: what is the role of traits in **growth**, **competition** and co-existence of species?
+
+
+```{r, echo=FALSE, out.width = "60%", out.height = "60%", fig.align='center', fig.cap='Effects of Interest.'}
+include_graphics(im3)
+```
+
+---
+
+## The Modeling Challenge
+
+* Connecting a vector/matrix of trait values to density points such that the ecological questions are answered.
+
+```{r, echo=FALSE, out.width = "80%", out.height = "80%", fig.align='center', fig.cap=''}
+include_graphics(im4)
+```
+
+---
+
+## An Added Layer
+
+* What about environmental factors?
+
+```{r, echo=FALSE, out.width = "80%", out.height = "80%", fig.align='center', fig.cap='Possible Effects'}
+include_graphics(im5)
+```
+
+---
+
+## A Quick Literature Dive
+
+
+* The focus is on character displacement approach to trait based ecology.
+
+```{r, echo=FALSE, out.width = "80%", out.height = "80%", fig.align='center', fig.cap='Publication timeline for character displacement approach to trait based ecology'}
+include_graphics(im6)
+```
+
+
+---
+
+## Quantitative Genetic Lotka-Volterra (Barabas et al. 2015)
+
+* Let $T(t)$ be a trait vector measured at $t$, $T(t) \sim N(\mu'(t), \sigma'^2)$
+
+\begin{eqnarray}
+\frac{dN_i(t)}{dt} &=& N_i(t) \int r_i(N, p, z, t) p_i(z, t)dz \\
+r_i(N, p, z, t) &=& b(z) - \sum_{j = 1}^{S}N_j(t) \int a(z, z') p_j(z', t) dz'\\
+\frac{dN_i(t)}{dt} &=& N_i(t) \left(b_i(t) - \sum_{j = 1}^{S} \alpha_{ij}(t) N_j(t) \right)\\
+b_i(t) &=&  \int p_i(z, t)b(z) dz\\
+\alpha_{ij}(t) &=& \int\int p_i(z, t) a(z, z') p_j(z', t) dz' dz
+\end{eqnarray}
+
+* $a(z, z')$ and $b(z)$ are appropriately chosen functions to describe interaction and intrinsic growth rate.
+
+---
+
+## Interaction Kernel $a(z, z')$ and Interaction Coefficients $\alpha_{ij}$
+
+* If $a(z, z') = exp\left( - \frac{(z - z')^2}{\omega^2}\right)$ then,
+
+\begin{eqnarray}
+\alpha_{ij}(t) &=& \int\int p_i(z, t) a(z, z') p_j(z', t) dz' dz \\
+&=& \frac{w}{\sqrt{2\sigma'^2_i + 2\sigma'^2_j + w^2}} exp\left(-\frac{(\mu'_{i}(t) - \mu'_{j}(t))^2}{2\sigma'^2_i + 2\sigma'^2_j + w^2} \right)
+\end{eqnarray}
+
+* Note that, $\alpha_{ij} = \frac{w}{\sqrt{4\sigma'^2_i + w^2}}$, when $i = j$
+
+---
+
+## Growth rate $b(z)$
+
+* If $b(z) = c, -\infty < z < \infty$ then,
+
+$$b_i(t) = \int p_i(z, t)b_i(z) dz = r_i$$ 
+
+\begin{eqnarray}
+\nonumber b_i(z) &=& c_i, \;\;\text{thus,}\\ 
+ r_i(t) &=& c_i \\\\
+\nonumber b_i(z) &=& \beta_{0} + \beta_{1} (\mu'_i(t) - \mu'_i) \;\;\text{thus,}\\
+\nonumber r_i(t) &=& \beta_{0} + \beta_{1} (\mu'_i(t) - \mu'_i)\\\\
+\nonumber b_i(z) &=& \beta_{0} + \beta_{1} \left(\frac{\mu'_i(t) - \mu'_i}{\sigma^2_i}\right) \;\;\text{thus,}\\
+ r_i(t) &=& \beta_{0} + \beta_{1} \left(\frac{\mu'_i(t) - \mu'_i}{\sigma'^2_i}\right)
+\end{eqnarray}
+
+
+---
+
+## Statstical Quantitative Genetic Lotka-Volterra (Two Species)
+
+\begin{eqnarray}
+\nonumber N_{ij} (t) &\sim& \mbox{log-normal}(\mu_{i}(t),\sigma_{i}^2).\\
+\left(\begin{array}{c}\frac{d \mu_1(t)}{d t} \\  \frac{d \mu_2(t)}{d t} \end{array} \right) &=& \left[ \left( \begin{array}{c} r_1(t) \\ r_2(t) \end{array} \right) - \left( \begin{array}{cc} \alpha_{11}(t) & \alpha_{12}(t) \\ \alpha_{21}(t) & \alpha_{22}(t) \end{array} \right)\left( \begin{array}{c} \mu_{1}(t) \\ \mu_{2}(t) \end{array} \right) \right] 
+\end{eqnarray}
+
+* $\alpha_{11} = \frac{w}{\sqrt{4\sigma'^2_1 + w^2}}$
+
+* $\alpha_{12} = \alpha_{21} = \frac{w}{\sqrt{2\sigma'^2_1 + 2\sigma'^2_2 + w^2}} exp\left(-\frac{(\mu'_{1}(t) - \mu'_{2}(t))^2}{2\sigma'^2_1 + 2\sigma'^2_2 + w^2} \right)$
+
+* $\alpha_{22} = \frac{w}{\sqrt{4\sigma'^2_2 + w^2}}$
+
+
+---
+
+## Estimating $\mu_i$ and $\sigma^2_i$ for Experiments with Replicates
+
+* Let $z_{ijk}(t)$ be the measured trait value for $Z$ at time point $t = 1, 2, \ldots, T$, per trait $i = 1, 2, \ldots, I$, replicate $j = 1, 2, \ldots, J$ and $k = 1, 2, 3, ..., n_{ij}(t)$. 
+
+\begin{equation}
+    \bar{Z}_{ij.}(t) = \frac{\sum_k z_{ij}(t)}{n_{ij}(t)}
+\end{equation}
+
+* Per time point $t$, we can also pool the $\bar{Z}_{ij.}(t)$ across the replicates;
+
+\begin{equation}
+    \bar{\bar{Z}}_{i.}(t) = \frac{\sum_j\bar{Z}_{ti.}}{J}
+\end{equation}
+
+* For variances
+
+$s^2_{ij.}(t) = \frac{\sum_k(z_{ijk}(t) - \bar{z}_{ij.}(t))^2}{n_{ij}(t) - 1}$, 
+$s^2_{i.} = \frac{\sum_t\sum_j(n_{ij.}(t) - 1)s^2_{ij.}(t)}{\sum_t\sum_j(n_{ij}(t) - 1)}$
+
+
+---
+
+## Adding a Bayesian Flavor
+
+* If monoculture and biculture experiments were carried out then;
+
+$\alpha_{B_{ij}} \sim N(\hat{\alpha}_{M_{ij}}, \hat{s}_{\alpha_{M_{ij}}}), i=j$
+
+$r_{B_{i}} \sim N(\hat{r}_{M_{i}}, \hat{s}_{r_{M_{i}}})$
+
+where $\hat{\alpha}_{M_{ij}}$ and $\hat{r}_{M_{i}}$ are estimates from the monoculture dataset.
+
+i.e. use estimates from the monoculture to formulate informative priors for $\alpha_{ij}, i=j$ in the biculture experiments.
+
+
+---
+
+## Experiments
+
+```{r, echo=FALSE, out.width = "40%", out.height = "40%", fig.align='center', fig.cap='Monoculture Experiment'}
+include_graphics(im7)
+```
+
+
+
+```{r, echo=FALSE, out.width = "40%", out.height = "40%", fig.align='center', fig.cap='Biculture Experiment'}
+include_graphics(im8)
+```
+
+* Traits Investigated: **RED.B.HLin (Chlorophyll a)**, **YEL.B.HLin (Phycoerytherin)**, **FSC.HLin (Size)**
+
+---
+
+## Data
+
+```{r, echo=FALSE, out.width = "80%", out.height = "80%", fig.align='center', fig.width=8, fig.height=8}
+include_graphics(im1o)
+```
+
+---
+
+## Data cont:
+
+
+```{r, echo=FALSE, out.width = "80%", out.height = "80%", fig.align='center', fig.width=8, fig.height=8}
+include_graphics(im1p)
+```
+
+---
+
+## Fitting The Model
+
+\begin{equation}
+\left(\begin{array}{c}log(N_1) \\  log(N_2) \end{array} \right) \sim MVN\left( \int\left(\begin{array}{c}\frac{d N_1}{d t} \\  \frac{d N_2}{d t} \end{array} \right), \Sigma \right)
+\end{equation}
+
+* $\Sigma = \left( \begin{array}{cc} \sigma^2_1 & \rho\sigma_1\sigma_2 \\ \rho\sigma_1\sigma_2 & \sigma^2_2 \end{array} \right)$
+
+* For monoculture; $\hat{\alpha}_{12} = 0$, $\Sigma = \left( \begin{array}{cc} \sigma^2_1 & 0 \\ 0 & \sigma^2_2 \end{array} \right)$
+
+---
+
+## Fitting The Model (cont.)
+
+
+```{r, echo=FALSE, out.width = "65%", out.height = "60%", fig.align='center'}
+include_graphics(im20)
+```
+
+---
+
+## Model Comparison (Monoculture)
+
+```{r, echo=FALSE, out.width = "80%", out.height = "80%", fig.align='center', fig.width=8, fig.height=8}
+include_graphics(im1q)
+```
+
+---
+
+## Model Comparison (Biculture)
+
+```{r, echo=FALSE, out.width = "80%", out.height = "80%", fig.align='center', fig.width=8, fig.height=8}
+include_graphics(im1r)
+```
+
+---
+
+## Results cont:
+
+```{r, echo=FALSE, out.width = "108%", out.height = "108%", fig.align='center', fig.width=8, fig.height=8}
+include_graphics(im1s)
+```
+
+---
+
+## Results cont:
+
+```{r, echo=FALSE, out.width = "108%", out.height = "108%", fig.align='center', fig.width=8, fig.height=8}
+include_graphics(im1t)
+```
+
+
+---
+
+## Results cont:
+
+
+```{r, echo=FALSE, out.width = "108%", out.height = "108%", fig.align='center', fig.width=8, fig.height=8}
+include_graphics(im1u)
+```
+
+---
+
+## Predictions
+
+```{r, echo=FALSE, out.width = "108%", out.height = "108%", fig.align='center', fig.width=8, fig.height=8}
+include_graphics(im1v)
+```
+
+---
+
+## Some Conclusions
+
+* The effect of informative priors is more feasible at temperature 18 compared to $20$ and $22^0C$. Regardless of the prior used at $20$ and $22^0C$, we arrive at the same posterior distribution for $\alpha_{ij}, i=j$
+
+* Informative priors has a considerable effect on the choice of best model especially at temperature $18^0C$. Table 4 and 5 makes this clearer. 
+
+* Generally, looics increases when we use informative priors at temperature $18^0C$, but not for the other two temperature levels.
+
+
+---
+
+class: center, middle
+
+##  Questions & Suggestions `r emo::ji("grinning")`
+
+
